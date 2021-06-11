@@ -6,4 +6,6 @@
     <string name="success">Crypto have been inserted into the database!</string>
     <string name="inProgress">in_progress</string>
     <string name="searchHint">start typing to Search</string>
+    <string name="name">NAME</string>
+    <string name="price">PRICE</string>
 </resources>

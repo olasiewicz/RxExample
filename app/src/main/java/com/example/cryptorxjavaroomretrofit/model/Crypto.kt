@@ -1,0 +1,3 @@
+package com.example.cryptorxjavaroomretrofit.model
+
+data class Crypto(val currency : String, val price : String)

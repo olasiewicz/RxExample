@@ -2,7 +2,8 @@
     <string name="app_name">CryptoRxJavaRoomRetrofit</string>
     <string name="nothing_found">No crypto found</string>
     <string name="search">search</string>
-    <string name="error_inserting_cheeses">Error inserting crypto!</string>
+    <string name="error_inserting_toDB">Error inserting crypto to DB!</string>
     <string name="success">Crypto have been inserted into the database!</string>
     <string name="inProgress">in_progress</string>
+    <string name="searchHint">start typing to Search</string>
 </resources>

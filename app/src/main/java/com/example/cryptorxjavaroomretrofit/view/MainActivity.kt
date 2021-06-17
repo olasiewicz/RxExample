@@ -17,7 +17,7 @@ import com.example.cryptorxjavaroomretrofit.model.Crypto
 import com.example.cryptorxjavaroomretrofit.model.database.CryptoDB
 import com.example.cryptorxjavaroomretrofit.model.database.CryptoDao
 import com.example.cryptorxjavaroomretrofit.model.database.CryptoEntity
-import com.example.cryptorxjavaroomretrofit.model.service.RetrofitInstance
+import com.example.cryptorxjavaroomretrofit.model.service.ApiService
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
@@ -26,12 +26,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subscribers.DisposableSubscriber
+import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
 
+    private val apiService: ApiService by inject()
+    private val database: CryptoDao by inject()
+
     private val compositeDisposable = CompositeDisposable()
     private val TAG = MainActivity::class.simpleName
-    lateinit var database: CryptoDao
     var cryptoAdapter = CryptoAdapter()
     private lateinit var subscriber: DisposableSubscriber<List<CryptoEntity>>
     private lateinit var binding: ActivityMainBinding
@@ -47,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("CheckResult")
     private fun fetchDataFromRestApi() {
-        RetrofitInstance.apiService.getData()
+        apiService.getData()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
             .subscribe({ response -> onResponseSuccess(response) }, { error -> onFailure(error) })
@@ -73,8 +76,6 @@ class MainActivity : AppCompatActivity() {
     ): Flowable<List<Long>> {
         val lista = Maybe.fromAction<List<Long>> {
 
-            database = CryptoDB.getInstance(context).cryptoDao()
-
             val cryptoEntityList = arrayListOf<CryptoEntity>()
             for (crypto in cryptoListResponse) {
                 cryptoEntityList.add(
@@ -97,8 +98,6 @@ class MainActivity : AppCompatActivity() {
                     .toFlowable(BackpressureStrategy.BUFFER)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(getSubscriber())
-
-
             }
             .doOnError {
                 Toast.makeText(

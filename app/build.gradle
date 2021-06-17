@@ -16,6 +16,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField 'String', 'BASE_URL', "\"https://api.nomics.com/v1/\""
     }
 
     buildTypes {
@@ -64,6 +66,9 @@ dependencies {
     implementation "androidx.room:room-rxjava2:$room_version"
 
     implementation 'com.jakewharton.rxbinding2:rxbinding:2.1.1'
+
+    //koin
+    implementation "org.koin:koin-android:2.1.6"
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

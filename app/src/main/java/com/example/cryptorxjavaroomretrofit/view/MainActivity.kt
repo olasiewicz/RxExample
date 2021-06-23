@@ -26,20 +26,23 @@ class MainActivity : AppCompatActivity(), Contract.ViewInterface {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         initRecyclerView()
-        presenter.fetchData()
+        presenter.init()
     }
 
     override fun showData(list: List<CryptoEntity>) {
+        if (list.isEmpty()) {
+            Toast.makeText(this, R.string.nothing_found, Toast.LENGTH_LONG).show()
+        }
         cryptoAdapter.cryptoList = list
     }
 
-    override fun initRecyclerView() {
+    private fun initRecyclerView() {
         val layoutManager: RecyclerView.LayoutManager = LinearLayoutManager(this)
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = cryptoAdapter
     }
 
-    override fun showToast(message: Int) {
+    override fun databaseDataCompletion(message: Int) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
@@ -48,9 +51,7 @@ class MainActivity : AppCompatActivity(), Contract.ViewInterface {
     }
 
     @SuppressLint("CheckResult")
-    override fun addTextChangedListener() {
-        presenter.onTextChanged(RxTextView.textChanges(binding.editText))
-    }
+    override fun observeTextChangedListener()= (RxTextView.textChanges(binding.editText))
 
     override fun onDestroy() {
         super.onDestroy()

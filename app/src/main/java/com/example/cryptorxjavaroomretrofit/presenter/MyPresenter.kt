@@ -15,60 +15,34 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subscribers.DisposableSubscriber
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
 
-class MyPresenter(override val view: Contract.ViewInterface) : Contract.PresenterInterface,
+@SuppressLint("CheckResult")
+class MyPresenter (override val view: Contract.ViewInterface) : Contract.PresenterInterface,
     KoinComponent {
 
     private val apiService: ApiService by inject()
     private val database: CryptoDao by inject()
     private val compositeDisposable: CompositeDisposable by inject()
 
-    private lateinit var subscriber: DisposableSubscriber<List<CryptoEntity>>
-
     @SuppressLint("CheckResult")
-    override fun fetchData() {
+    override fun init() {
+    fetchDataFromApi()
+    }
 
+    private fun fetchDataFromApi() {
         apiService.getData()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
             .subscribe({ response -> onResponseSuccess(response) }, { error -> onFailure(error) })
     }
 
-    @SuppressLint("CheckResult")
-    override fun onTextChanged(text: InitialValueObservable<CharSequence>) {
-        text.observeOn(Schedulers.io())
-            .map { if (it.length == 0) database.findAll() else database.findCrypto("%$it%") }
-            .toFlowable(BackpressureStrategy.BUFFER)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(getSubscriber())
-    }
-
     override fun destroy() {
         CryptoDB.destroyInstance()
         compositeDisposable.clear()
     }
-
-    fun getSubscriber(): DisposableSubscriber<List<CryptoEntity>> {
-        subscriber = object : DisposableSubscriber<List<CryptoEntity>>() {
-            override fun onNext(listOfCrypto: List<CryptoEntity>) {
-                if (listOfCrypto.isEmpty()) {
-                    view.showToast(R.string.nothing_found)
-                }
-                view.showData(listOfCrypto)
-            }
-
-            override fun onError(error: Throwable) = view.error(error)
-            override fun onComplete() = Unit
-
-        }
-        compositeDisposable.add(subscriber)
-        return subscriber
-    }
-
 
     private fun onFailure(error: Throwable) {
         view.error(error)
@@ -100,12 +74,23 @@ class MyPresenter(override val view: Contract.ViewInterface) : Contract.Presente
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete {
-                view.showToast(R.string.success)
-                view.addTextChangedListener()
+                view.databaseDataCompletion(R.string.success)
+
+                val observable: InitialValueObservable<CharSequence> = view.observeTextChangedListener()
+                observable
+                    .observeOn(Schedulers.io())
+                    .map { if (it.length == 0) database.findAll() else database.findCrypto("%$it%") }
+                    .toFlowable(BackpressureStrategy.BUFFER)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { response -> view.showData(response) },
+                        { error -> onFailure(error) })
+                compositeDisposable.add(observable.subscribe())
             }
             .doOnError {
-                view.showToast(R.string.error_inserting_toDB)
+                view.databaseDataCompletion(R.string.error_inserting_toDB)
             }
+        compositeDisposable.add(lista.subscribe())
 
         return lista.toFlowable()
     }

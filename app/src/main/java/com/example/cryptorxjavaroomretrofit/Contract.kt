@@ -2,21 +2,20 @@ package com.example.cryptorxjavaroomretrofit
 
 import com.example.cryptorxjavaroomretrofit.model.database.CryptoEntity
 import com.jakewharton.rxbinding2.InitialValueObservable
+import io.reactivex.Observable
 
 interface Contract {
 
     interface ViewInterface {
         fun showData(list: List<CryptoEntity>)
-        fun initRecyclerView()
-        fun showToast(message: Int)
+        fun databaseDataCompletion(message: Int)
         fun error(error: Throwable)
-        fun addTextChangedListener()
+        fun observeTextChangedListener() : InitialValueObservable<CharSequence>
     }
 
     interface PresenterInterface {
         val view : ViewInterface
-        fun fetchData()
-        fun onTextChanged(text: InitialValueObservable<CharSequence>)
+        fun init()
         fun destroy()
     }
 

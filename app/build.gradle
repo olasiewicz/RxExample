@@ -18,6 +18,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField 'String', 'BASE_URL', "\"https://api.nomics.com/v1/\""
+
+        buildConfigField 'String', 'API_KEY', API_KEY
     }
 
     buildTypes {
